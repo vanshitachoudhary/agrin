@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgriN — Regenerative Agricultural Intelligence Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#121B30; --navy-2:#1C2A47; --navy-3:#26385C; --sage:#8FA98C; --sage-dk:#5F7A5C;
+  --bronze:#C9A15A; --paper:#F3F4EE; --paper-2:#E8EAE0; --ink:#151E2E; --ink-soft:#5B6472; --line:#D5D8CC;
+  --shadow:0 1px 2px rgba(18,27,48,.04),0 6px 18px rgba(18,27,48,.06);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0E1420; --paper-2:#161F30; --ink:#E7E9E2; --ink-soft:#9AA3B0; --line:#2A3346; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.35); }
+}
+:root[data-theme="dark"]{ --paper:#0E1420; --paper-2:#161F30; --ink:#E7E9E2; --ink-soft:#9AA3B0; --line:#2A3346; }
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{margin:0; min-height:100%; background:
+    radial-gradient(circle at 12px 12px, rgba(143,169,140,.18) 1px, transparent 1.4px) 0 0/24px 24px,
+    var(--paper);
+  color:var(--ink); font-family:'IBM Plex Sans',sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+h1,h2,h3{font-family:'Fraunces',serif; margin:0; font-weight:600; letter-spacing:-.01em;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.icon{width:16px; height:16px; vertical-align:-3px; margin-right:6px; opacity:.85;}
+header{position:sticky; top:env(safe-area-inset-top,0px); z-index:10; background:rgba(18,27,48,.88); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:#fff; padding:14px 22px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:var(--shadow); border-bottom:1px solid rgba(255,255,255,.06);}
+header h1{font-size:1.3rem; color:#fff;}
+header .tag{font-size:.72rem; color:var(--sage); margin-top:2px; letter-spacing:.03em;}
+nav{display:flex; gap:4px; margin-left:auto; overflow-x:auto; scrollbar-width:none; max-width:100%;}
+nav::-webkit-scrollbar{display:none;}
+nav button{background:none; border:1px solid rgba(255,255,255,.14); color:#C7CDD8; padding:8px 14px; border-radius:20px; font-family:'IBM Plex Sans'; font-size:.83rem; cursor:pointer; white-space:nowrap; transition:all .2s ease;}
+nav button:hover{border-color:var(--bronze); color:#fff;}
+nav button.active{background:var(--bronze); color:var(--navy); font-weight:600; border-color:var(--bronze);}
+main{max-width:1120px; margin:0 auto; padding:30px 20px 60px;}
+.panel{display:none;}
+.panel.active{display:block; animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-top:18px;}
+.card{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:18px; box-shadow:var(--shadow); transition:transform .2s ease, box-shadow .2s ease; opacity:0; animation:fadeUp .5s ease forwards;}
+.card:nth-child(1){animation-delay:.02s} .card:nth-child(2){animation-delay:.08s} .card:nth-child(3){animation-delay:.14s} .card:nth-child(4){animation-delay:.2s}
+.card:hover{transform:translateY(-3px); box-shadow:0 6px 10px rgba(18,27,48,.07),0 18px 32px rgba(18,27,48,.12);}
+.card h3{font-size:.9rem; margin-bottom:10px; color:var(--ink-soft); font-weight:600; font-family:'IBM Plex Sans'; display:flex; align-items:center;}
+.metric{font-family:'Fraunces',serif; font-size:2.15rem; font-weight:600; line-height:1; color:var(--navy);}
+:root[data-theme="dark"] .metric{color:var(--sage);}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .metric{color:var(--sage);} }
+.metric-label{color:var(--ink-soft); font-size:.8rem; margin-top:4px;}
+.bar-track{height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-top:10px;}
+.bar-fill{height:100%; background:var(--sage-dk); border-radius:4px; width:0; transition:width 1s cubic-bezier(.22,1,.36,1);}
+select,input[type=file],input[type=number]{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans'; font-size:.9rem; transition:border-color .15s;}
+select:focus,input:focus{outline:none; border-color:var(--bronze);}
+label{display:block; font-size:.78rem; color:var(--ink-soft); margin:12px 0 5px; font-weight:500;}
+button.action{background:var(--navy); color:#fff; border:none; padding:11px 20px; border-radius:6px; font-weight:600; font-size:.9rem; cursor:pointer; margin-top:16px; transition:background .2s, transform .1s;}
+button.action:hover{background:var(--navy-3);}
+button.action:active{transform:scale(.98);}
+.result{margin-top:18px; padding:18px; border-radius:8px; border-left:3px solid var(--bronze); background:var(--paper-2); box-shadow:var(--shadow); animation:fadeUp .3s ease;}
+.result h4{font-family:'Fraunces',serif; font-size:1.1rem; margin-bottom:6px; color:var(--navy);}
+.pill{display:inline-block; background:var(--sage); color:#10240F; font-size:.72rem; padding:3px 10px; border-radius:12px; margin-right:6px; margin-top:6px; font-weight:500;}
+.country-node{fill:var(--bronze); stroke:var(--paper); stroke-width:2;}
+.country-label{font-family:'IBM Plex Mono',monospace; font-size:11px; fill:var(--ink);}
+.link-line{stroke:var(--sage); stroke-width:1.2; opacity:.55; stroke-dasharray:4 3; animation:dash 20s linear infinite;}
+@keyframes dash{to{stroke-dashoffset:-200;}}
+footer{text-align:center; color:var(--ink-soft); font-size:.75rem; padding:20px; border-top:1px solid var(--line);}
+.subnote{color:var(--ink-soft); font-size:.82rem; margin-top:14px; line-height:1.5;}
+.chart-wrap{position:relative; height:220px; margin-top:10px;}
+.hero{background:linear-gradient(135deg,var(--navy),var(--navy-3)); color:#fff; border-radius:12px; padding:26px 24px; margin-bottom:8px; box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px;}
+.hero h2{color:#fff; font-size:1.5rem;}
+.hero .tag{color:var(--sage); font-size:.78rem; letter-spacing:.04em; margin-bottom:6px;}
+.hero .stat{text-align:right;}
+.hero .stat .metric{color:var(--bronze); font-size:2rem;}
+.skeleton{position:relative; overflow:hidden; background:var(--paper-2); border-radius:8px; height:20px; margin:6px 0;}
+.skeleton::after{content:''; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent); animation:shimmer 1.3s infinite;}
+@keyframes shimmer{100%{transform:translateX(100%);}}
+@media print{
+  header, nav, .subnote, button.action, #leafInput{display:none !important;}
+  .panel{display:none !important;}
+  .panel.print-active{display:block !important;}
+  body{background:#fff !important;}
+}
+@media(max-width:600px){
+  header{padding:12px 14px;} main{padding:20px 14px 50px;}
+  nav{width:100%; margin-left:0; justify-content:flex-start;}
+  .hero{flex-direction:column; align-items:flex-start;}
+  .hero .stat{text-align:left;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>AgriN</h1>
+    <div class="tag" data-i18n="tagline">Regenerative Agricultural Intelligence Network · BRICS Cooperation</div>
+  </div>
+  <div style="margin-left:12px;">
+    <button id="langToggle" style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); color:#fff; padding:7px 12px; border-radius:20px; font-size:.8rem; cursor:pointer;">🌐 हिं</button>
+  </div>
+  <nav id="nav">
+    <button data-panel="dashboard" class="active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-i18n="nav1">Dashboard</span></button>
+    <button data-panel="advisor"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21c-4-2-7-6-7-10a7 7 0 0 1 14 0c0 4-3 8-7 10Z"/><path d="M12 21V9"/></svg><span data-i18n="nav2">Crop Advisor</span></button>
+    <button data-panel="scanner"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/><path d="M8 5l1.5-2h5L16 5"/></svg><span data-i18n="nav3">Disease Scanner</span></button>
+    <button data-panel="network"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="7" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M6.7 8.6 10.5 16.3M17.3 7.6 13.5 16.3M6.9 6.6l10.3-.3"/></svg><span data-i18n="nav4">BRICS Network</span></button>
+    <button data-panel="simulator"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span data-i18n="nav5">Impact Simulator</span></button>
+  </nav>
+</header>
+
+<main>
+
+  <section id="dashboard" class="panel active">
+    <div class="hero">
+      <div>
+        <div class="tag">LIVE REGIONAL SNAPSHOT</div>
+        <h2 id="heroRegion">Malwa Plateau, India</h2>
+      </div>
+      <div class="stat"><div class="metric" id="heroScore">0</div><div class="metric-label">Composite land-health score</div></div>
+    </div>
+    <label data-i18n="lbl_region">Region</label>
+    <select id="regionSelect">
+      <option value="Malwa Plateau, India">Malwa Plateau, India</option>
+      <option value="Cerrado, Brazil">Cerrado, Brazil</option>
+      <option value="Free State, South Africa">Free State, South Africa</option>
+      <option value="Volga Basin, Russia">Volga Basin, Russia</option>
+      <option value="Heilongjiang, China">Heilongjiang, China</option>
+    </select>
+
+    <div class="grid" id="dashCards"></div>
+
+    <div class="grid" style="grid-template-columns:1.3fr 1fr; margin-top:20px;">
+      <div class="card"><h3 data-i18n="chart_ndvi_title">30-day NDVI trend (satellite vegetation index)</h3><div class="chart-wrap"><canvas id="ndviChart"></canvas></div></div>
+      <div class="card"><h3 data-i18n="chart_soil_title">Soil composition</h3><div class="chart-wrap"><canvas id="soilChart"></canvas></div></div>
+    </div>
+    <p class="subnote" data-i18n="dash_footnote">Figures shown are illustrative for the prototype demo. The production version pulls Sentinel-2/MODIS NDVI, national soil-health datasets, and regional weather-model forecasts through the shared BRICS AgriN data layer.</p>
+  </section>
+
+  <section id="advisor" class="panel">
+    <h2 style="font-size:1.2rem" data-i18n="h_advisor">Regenerative Crop Advisor</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 20px; max-width:520px;">
+      <div><label data-i18n="lbl_soiltype">Soil type</label>
+        <select id="soilType"><option value="Black cotton (clay-heavy)">Black cotton (clay-heavy)</option><option value="Alluvial">Alluvial</option><option value="Red laterite">Red laterite</option><option value="Sandy loam">Sandy loam</option></select>
+      </div>
+      <div><label data-i18n="lbl_season">Season</label>
+        <select id="season"><option value="Kharif (monsoon)">Kharif (monsoon)</option><option value="Rabi (winter)">Rabi (winter)</option><option value="Zaid (summer)">Zaid (summer)</option></select>
+      </div>
+      <div><label data-i18n="lbl_rainfall">Avg. rainfall</label>
+        <select id="rainfall"><option value="Low (<500mm)">Low (&lt;500mm)</option><option value="Moderate (500–1000mm)">Moderate (500–1000mm)</option><option value="High (>1000mm)">High (&gt;1000mm)</option></select>
+      </div>
+      <div><label data-i18n="lbl_priority">Land health priority</label>
+        <select id="priority"><option value="Soil carbon rebuilding">Soil carbon rebuilding</option><option value="Water conservation">Water conservation</option><option value="Maximise yield">Maximise yield</option></select>
+      </div>
+    </div>
+    <button class="action" onclick="recommend()" data-i18n="btn_recommend">Get recommendation</button>
+    <button class="action" style="background:var(--sage-dk); margin-left:8px;" onclick="printAdvisory()" data-i18n="btn_download">📄 Download report</button>
+    <div id="advisorResult"></div>
+  </section>
+
+  <section id="scanner" class="panel">
+    <h2 style="font-size:1.2rem" data-i18n="h_scanner">Crop Disease Diagnostic</h2>
+    <p class="subnote" style="margin-top:8px;" data-i18n="p_scanner">Upload a leaf photo. This prototype runs a lightweight on-device colour/texture heuristic to demonstrate the flow — the production build swaps in a trained CV model (YOLOv8/EfficientNet) served from the AgriN backend.</p>
+    <label data-i18n="lbl_leafimage">Leaf image</label>
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <button type="button" class="action" style="margin-top:0;" id="fileBtnLabel" onclick="document.getElementById('leafInput').click()">Choose file</button>
+      <span id="fileNameLabel" class="subnote" style="margin-top:0;">No file chosen</span>
+    </div>
+    <input type="file" id="leafInput" accept="image/*" onchange="scanLeaf(event)" style="display:none">
+    <canvas id="leafCanvas" style="display:none;"></canvas>
+    <div id="scanResult"></div>
+  </section>
+
+  <section id="network" class="panel">
+    <h2 style="font-size:1.2rem" data-i18n="h_network">BRICS Shared Intelligence Layer</h2>
+    <p class="subnote" style="margin-top:8px;" data-i18n="p_network">A common protocol for member nations to publish and subscribe to regenerative-agriculture models — soil taxonomies, pest-outbreak signals, and climate-resilient seed data — without centralising raw farm data.</p>
+    <svg viewBox="0 0 700 300" style="width:100%; height:auto; margin-top:16px;" id="networkSvg"></svg>
+    <div class="grid">
+      <div class="card"><h3 data-i18n="card_shared">Shared this quarter</h3><div class="metric" id="statA">0</div><div class="metric-label">Soil-health model updates</div></div>
+      <div class="card"><h3 data-i18n="card_advisories">Cross-border advisories</h3><div class="metric" id="statB">0</div><div class="metric-label">Pest/disease alerts propagated</div></div>
+      <div class="card"><h3 data-i18n="card_farms">Member farms connected</h3><div class="metric" id="statC">0</div><div class="metric-label">across 5 nations (demo figures)</div></div>
+    </div>
+  </section>
+
+  <section id="simulator" class="panel">
+    <h2 style="font-size:1.2rem" data-i18n="h_simulator">Impact Simulator</h2>
+    <p class="subnote" style="margin-top:8px;" data-i18n="p_simulator">Two live calculation engines — not mock numbers. Move any slider and the score recomputes instantly using a weighted agronomic formula.</p>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr; margin-top:16px;">
+      <div class="card">
+        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M4 20V10l4-3 4 3 4-3 4 3v10"/></svg><span data-i18n="lbl_soilcalc">Soil Health Calculator</span></h3>
+        <label><span data-i18n="lbl_ph">Soil pH:</span> <span id="phVal" class="mono">6.5</span></label>
+        <input type="range" id="phSlider" min="4" max="9" step="0.1" value="6.5" style="width:100%">
+        <label><span data-i18n="lbl_oc">Organic carbon %:</span> <span id="ocVal" class="mono">1.5</span></label>
+        <input type="range" id="ocSlider" min="0" max="3" step="0.1" value="1.5" style="width:100%">
+        <label><span data-i18n="lbl_moist">Moisture %:</span> <span id="moistVal" class="mono">50</span></label>
+        <input type="range" id="moistSlider" min="0" max="100" step="1" value="50" style="width:100%">
+        <label data-i18n="lbl_nitrogen">Nitrogen level</label>
+        <select id="nSelect"><option value="0.3">Low</option><option value="0.7" selected>Medium</option><option value="1">High</option></select>
+        <div style="margin-top:16px;"><div class="metric" id="soilCalcScore">0</div><div class="metric-label" data-i18n="lbl_soilscore">Computed soil health score</div></div>
+        <div class="chart-wrap" style="height:140px;"><canvas id="factorChart"></canvas></div>
+        <p class="subnote" id="soilCalcTip"></p>
+      </div>
+
+      <div class="card">
+        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M2 12h20"/></svg><span data-i18n="lbl_climate">Climate Risk What-If</span></h3>
+        <label><span data-i18n="lbl_rain">Rainfall change:</span> <span id="rainVal" class="mono">0%</span></label>
+        <input type="range" id="rainSlider" min="-50" max="50" step="5" value="0" style="width:100%">
+        <label><span data-i18n="lbl_temp">Temperature rise:</span> <span id="tempVal" class="mono">0.0°C</span></label>
+        <input type="range" id="tempSlider" min="0" max="4" step="0.2" value="0" style="width:100%">
+        <div style="margin-top:16px;"><div class="metric" id="yieldImpact">0%</div><div class="metric-label" data-i18n="lbl_yieldimpact">Projected yield impact</div></div>
+        <div class="bar-track"><div class="bar-fill" id="yieldBar" style="width:50%; background:var(--bronze)"></div></div>
+        <p class="subnote" id="climateTip"></p>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer data-i18n="footer">AgriN prototype · Track 4, BRICS Cooperation · built for CodeForCommunities hackathon</footer>
+
+<script>
+try{
+  const I18N={
+    en:{nav1:"Dashboard",nav2:"Crop Advisor",nav3:"Disease Scanner",nav4:"BRICS Network",nav5:"Impact Simulator",
+        tagline:"Regenerative Agricultural Intelligence Network · BRICS Cooperation",
+        h_advisor:"Regenerative Crop Advisor", h_scanner:"Crop Disease Diagnostic",
+        h_network:"BRICS Shared Intelligence Layer", h_simulator:"Impact Simulator",
+        p_network:"A common protocol for member nations to publish and subscribe to regenerative-agriculture models — soil taxonomies, pest-outbreak signals, and climate-resilient seed data — without centralising raw farm data.",
+        p_simulator:"Two live calculation engines — not mock numbers. Move any slider and the score recomputes instantly using a weighted agronomic formula.",
+        p_scanner:"Upload a leaf photo. This prototype runs a lightweight on-device colour/texture heuristic to demonstrate the flow — the production build swaps in a trained CV model (YOLOv8/EfficientNet) served from the AgriN backend.",
+        lbl_region:"Region", lbl_soiltype:"Soil type", lbl_season:"Season", lbl_rainfall:"Avg. rainfall",
+        lbl_priority:"Land health priority", lbl_leafimage:"Leaf image",
+        btn_recommend:"Get recommendation", btn_download:"📄 Download report",
+        card_shared:"Shared this quarter", card_advisories:"Cross-border advisories", card_farms:"Member farms connected",
+        lbl_soilcalc:"Soil Health Calculator", lbl_ph:"Soil pH:", lbl_oc:"Organic carbon %:", lbl_moist:"Moisture %:", lbl_nitrogen:"Nitrogen level",
+        lbl_climate:"Climate Risk What-If", lbl_rain:"Rainfall change:", lbl_temp:"Temperature rise:",
+        lbl_soilscore:"Computed soil health score", lbl_yieldimpact:"Projected yield impact",
+        card_soil:"Soil health index", card_ndvi:"Satellite vegetation (NDVI)", card_weather:"Weather forecast", card_crop:"Recommended focus crop",
+        chart_ndvi_title:"30-day NDVI trend (satellite vegetation index)", chart_soil_title:"Soil composition",
+        dash_footnote:"Figures shown are illustrative for the prototype demo. The production version pulls Sentinel-2/MODIS NDVI, national soil-health datasets, and regional weather-model forecasts through the shared BRICS AgriN data layer.",
+        src_forecast:"source: regional forecast model", based_on_trend:"based on current soil + NDVI trend",
+        soil_comp_labels:['Organic matter','Minerals','Moisture'],
+        footer:"AgriN prototype · Track 4, BRICS Cooperation · built for CodeForCommunities hackathon",
+        factor_ph:"pH", factor_oc:"organic carbon", factor_moist:"moisture",
+        tip_weak1:"Weakest factor:", tip_weak2:"Improving it moves the composite score fastest.",
+        climate_ok:"Within normal resilience range for regenerative soils.",
+        climate_mod:"Moderate stress — cover cropping and mulching buffer this range.",
+        climate_severe:"Severe stress zone — drought-tolerant varieties and water conservation become critical.",
+        btn_choosefile:"Choose file", lbl_nofile:"No file chosen",
+        factor_chart_labels:['Organic C','pH balance','Moisture','Nitrogen'],
+        soil_opts:{"Black cotton (clay-heavy)":"Black cotton (clay-heavy)","Alluvial":"Alluvial","Red laterite":"Red laterite","Sandy loam":"Sandy loam"},
+        season_opts:{"Kharif (monsoon)":"Kharif (monsoon)","Rabi (winter)":"Rabi (winter)","Zaid (summer)":"Zaid (summer)"},
+        rain_opts:{"Low (<500mm)":"Low (<500mm)","Moderate (500–1000mm)":"Moderate (500–1000mm)","High (>1000mm)":"High (>1000mm)"},
+        priority_opts:{"Soil carbon rebuilding":"Soil carbon rebuilding","Water conservation":"Water conservation","Maximise yield":"Maximise yield"},
+        nitrogen_opts:{"0.3":"Low","0.7":"Medium","1":"High"},
+        region_names:{"Malwa Plateau, India":"Malwa Plateau, India","Cerrado, Brazil":"Cerrado, Brazil","Free State, South Africa":"Free State, South Africa","Volga Basin, Russia":"Volga Basin, Russia","Heilongjiang, China":"Heilongjiang, China"},
+        country_names:{"India":"India","Brazil":"Brazil","South Africa":"South Africa","Russia":"Russia","China":"China"}},
+    hi:{nav1:"डैशबोर्ड",nav2:"फसल सलाहकार",nav3:"रोग स्कैनर",nav4:"ब्रिक्स नेटवर्क",nav5:"प्रभाव सिम्युलेटर",
+        tagline:"पुनर्योजी कृषि बुद्धिमत्ता नेटवर्क · ब्रिक्स सहयोग",
+        h_advisor:"पुनर्योजी फसल सलाहकार", h_scanner:"फसल रोग निदान",
+        h_network:"ब्रिक्स साझा बुद्धिमत्ता प्रणाली", h_simulator:"प्रभाव सिम्युलेटर",
+        p_network:"सदस्य देशों के लिए मृदा वर्गीकरण, कीट-प्रकोप संकेत और जलवायु-प्रतिरोधी बीज डेटा जैसे पुनर्योजी-कृषि मॉडल साझा करने का एक साझा प्रोटोकॉल — बिना कच्चे खेत डेटा को केंद्रीकृत किए।",
+        p_simulator:"दो लाइव कैलकुलेशन इंजन — नकली आंकड़े नहीं। कोई भी स्लाइडर हिलाएं, स्कोर तुरंत एक भारित कृषि-विज्ञान सूत्र से दोबारा गणना होता है।",
+        p_scanner:"पत्ती की फोटो अपलोड करें। यह प्रोटोटाइप डिवाइस पर ही रंग/बनावट विश्लेषण चलाता है — प्रोडक्शन संस्करण में AgriN बैकएंड से एक प्रशिक्षित CV मॉडल (YOLOv8/EfficientNet) जोड़ा जाएगा।",
+        lbl_region:"क्षेत्र", lbl_soiltype:"मिट्टी का प्रकार", lbl_season:"मौसम", lbl_rainfall:"औसत वर्षा",
+        lbl_priority:"भूमि स्वास्थ्य प्राथमिकता", lbl_leafimage:"पत्ती की छवि",
+        btn_recommend:"सिफारिश प्राप्त करें", btn_download:"📄 रिपोर्ट डाउनलोड करें",
+        card_shared:"इस तिमाही साझा किया गया", card_advisories:"सीमा-पार सलाह", card_farms:"जुड़े हुए किसान",
+        lbl_soilcalc:"मृदा स्वास्थ्य कैलकुलेटर", lbl_ph:"मिट्टी का pH:", lbl_oc:"जैविक कार्बन %:", lbl_moist:"नमी %:", lbl_nitrogen:"नाइट्रोजन स्तर",
+        lbl_climate:"जलवायु जोखिम अनुमान", lbl_rain:"वर्षा में बदलाव:", lbl_temp:"तापमान वृद्धि:",
+        lbl_soilscore:"गणना किया गया मृदा स्वास्थ्य स्कोर", lbl_yieldimpact:"अनुमानित उपज प्रभाव",
+        card_soil:"मृदा स्वास्थ्य सूचकांक", card_ndvi:"उपग्रह वनस्पति (NDVI)", card_weather:"मौसम पूर्वानुमान", card_crop:"अनुशंसित फसल",
+        chart_ndvi_title:"30-दिन NDVI रुझान (उपग्रह वनस्पति सूचकांक)", chart_soil_title:"मिट्टी की संरचना",
+        dash_footnote:"दिखाए गए आंकड़े प्रोटोटाइप डेमो के लिए उदाहरणात्मक हैं। प्रोडक्शन संस्करण साझा BRICS AgriN डेटा परत के माध्यम से Sentinel-2/MODIS NDVI, राष्ट्रीय मृदा-स्वास्थ्य डेटासेट और क्षेत्रीय मौसम-मॉडल पूर्वानुमान का उपयोग करता है।",
+        src_forecast:"स्रोत: क्षेत्रीय पूर्वानुमान मॉडल", based_on_trend:"वर्तमान मिट्टी + NDVI रुझान पर आधारित",
+        soil_comp_labels:['जैविक पदार्थ','खनिज','नमी'],
+        footer:"AgriN प्रोटोटाइप · ट्रैक 4, ब्रिक्स सहयोग · CodeForCommunities हैकाथॉन के लिए बनाया गया",
+        factor_ph:"pH", factor_oc:"जैविक कार्बन", factor_moist:"नमी",
+        tip_weak1:"सबसे कमजोर कारक:", tip_weak2:"इसे सुधारने से समग्र स्कोर सबसे तेज़ी से बढ़ेगा।",
+        climate_ok:"पुनर्योजी मिट्टी के लिए सामान्य सहनशीलता सीमा के भीतर।",
+        climate_mod:"मध्यम तनाव — कवर क्रॉपिंग और मल्चिंग इस सीमा को संतुलित करते हैं।",
+        climate_severe:"गंभीर तनाव क्षेत्र — सूखा-प्रतिरोधी किस्में और जल संरक्षण महत्वपूर्ण हो जाते हैं।",
+        btn_choosefile:"फ़ाइल चुनें", lbl_nofile:"कोई फ़ाइल नहीं चुनी गई",
+        factor_chart_labels:['जैविक कार्बन','pH संतुलन','नमी','नाइट्रोजन'],
+        soil_opts:{"Black cotton (clay-heavy)":"काली कपास मिट्टी (चिकनी)","Alluvial":"जलोढ़ मिट्टी","Red laterite":"लाल लैटेराइट","Sandy loam":"बलुई दोमट"},
+        season_opts:{"Kharif (monsoon)":"खरीफ (मानसून)","Rabi (winter)":"रबी (सर्दी)","Zaid (summer)":"ज़ायद (गर्मी)"},
+        rain_opts:{"Low (<500mm)":"कम (<500मिमी)","Moderate (500–1000mm)":"मध्यम (500–1000मिमी)","High (>1000mm)":"अधिक (>1000मिमी)"},
+        priority_opts:{"Soil carbon rebuilding":"मृदा कार्बन पुनर्निर्माण","Water conservation":"जल संरक्षण","Maximise yield":"उपज अधिकतम करें"},
+        nitrogen_opts:{"0.3":"कम","0.7":"मध्यम","1":"अधिक"},
+        region_names:{"Malwa Plateau, India":"मालवा पठार, भारत","Cerrado, Brazil":"सेराडो, ब्राज़ील","Free State, South Africa":"फ्री स्टेट, दक्षिण अफ्रीका","Volga Basin, Russia":"वोल्गा बेसिन, रूस","Heilongjiang, China":"हेइलोंगजियांग, चीन"},
+        country_names:{"India":"भारत","Brazil":"ब्राज़ील","South Africa":"दक्षिण अफ्रीका","Russia":"रूस","China":"चीन"}}
+  };
+  let curLang='en';
+  let selectedFileName=null;
+  function translateSelect(id,map){
+    const sel=document.getElementById(id); if(!sel) return;
+    Array.from(sel.options).forEach(opt=>{ opt.textContent = map[opt.value] || opt.value; });
+  }
+  function applyLang(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key=el.dataset.i18n; if(I18N[curLang][key]) el.textContent=I18N[curLang][key];
+    });
+    const L=I18N[curLang];
+    translateSelect('regionSelect', L.region_names);
+    translateSelect('soilType', L.soil_opts);
+    translateSelect('season', L.season_opts);
+    translateSelect('rainfall', L.rain_opts);
+    translateSelect('priority', L.priority_opts);
+    translateSelect('nSelect', L.nitrogen_opts);
+    const fbtn=document.getElementById('fileBtnLabel'); if(fbtn) fbtn.textContent=L.btn_choosefile;
+    const fname=document.getElementById('fileNameLabel'); if(fname && !selectedFileName) fname.textContent=L.lbl_nofile;
+    if(typeof drawNetwork==='function') drawNetwork();
+  }
+  document.getElementById('langToggle').addEventListener('click',()=>{
+    curLang = curLang==='en' ? 'hi' : 'en';
+    document.getElementById('langToggle').textContent = curLang==='en' ? '🌐 हिं' : '🌐 EN';
+    applyLang();
+    if(typeof renderDash==='function') renderDash();
+    if(typeof calcSoil==='function') calcSoil();
+    if(typeof calcClimate==='function') calcClimate();
+  });
+
+  let sampleAPI=null;
+  (async()=>{ try{ sampleAPI = await claude.use('sample'); }catch(e){ sampleAPI=null; } })();
+
+  function countUp(el, target, suffix){
+    suffix = suffix || '';
+    let start = 0; const dur = 800; const t0 = performance.now();
+    function step(t){
+      const p = Math.min((t - t0) / dur, 1);
+      el.textContent = Math.round(start + (target - start) * (1 - Math.pow(1 - p, 3))) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const nav=document.getElementById('nav');
+  nav.addEventListener('click',e=>{
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.panel).classList.add('active');
+    if(btn.dataset.panel==='network'){ countUp(document.getElementById('statA'),1240); countUp(document.getElementById('statB'),86); countUp(document.getElementById('statC'),4200,'+'); }
+  });
+
+  const regionData={
+    "Malwa Plateau, India":{soil:72,ndvi:68,rain:"64mm, next 5 days",rain_hi:"64मिमी, अगले 5 दिन",crop:"Soybean / Chana rotation",crop_hi:"सोयाबीन / चना चक्र",comp:[38,34,28]},
+    "Cerrado, Brazil":{soil:65,ndvi:74,rain:"12mm, dry spell",rain_hi:"12मिमी, सूखा दौर",crop:"Cover-crop maize",crop_hi:"कवर-क्रॉप मक्का",comp:[30,44,26]},
+    "Free State, South Africa":{soil:58,ndvi:55,rain:"8mm, drought watch",rain_hi:"8मिमी, सूखे की चेतावनी",crop:"Sorghum",crop_hi:"ज्वार",comp:[46,26,28]},
+    "Volga Basin, Russia":{soil:70,ndvi:61,rain:"22mm, cool front",rain_hi:"22मिमी, ठंडी हवा",crop:"Winter wheat",crop_hi:"शीतकालीन गेहूं",comp:[40,32,28]},
+    "Heilongjiang, China":{soil:77,ndvi:80,rain:"40mm, monsoon tail",rain_hi:"40मिमी, मानसून का अंत",crop:"Rice / soybean",crop_hi:"चावल / सोयाबीन",comp:[34,40,26]}
+  };
+  const REGION_NAME_HI={"Malwa Plateau, India":"मालवा पठार, भारत","Cerrado, Brazil":"सेराडो, ब्राज़ील","Free State, South Africa":"फ्री स्टेट, दक्षिण अफ्रीका","Volga Basin, Russia":"वोल्गा बेसिन, रूस","Heilongjiang, China":"हेइलोंगजियांग, चीन"};
+  let ndviChart, soilChart;
+  function renderDash(){
+    const key=document.getElementById('regionSelect').value;
+    const r=regionData[key];
+    document.getElementById('heroRegion').textContent = curLang==='hi' ? REGION_NAME_HI[key] : key;
+    countUp(document.getElementById('heroScore'), Math.round((r.soil+r.ndvi)/2));
+    const rainText = curLang==='hi' ? r.rain_hi : r.rain;
+    const cropText = curLang==='hi' ? r.crop_hi : r.crop;
+    document.getElementById('dashCards').innerHTML=`
+      <div class="card"><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M4 20V10l4-3 4 3 4-3 4 3v10"/></svg>${I18N[curLang].card_soil}</h3><div class="metric">${r.soil}<span style="font-size:1rem">/100</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bar1" style="width:0"></div></div></div>
+      <div class="card"><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>${I18N[curLang].card_ndvi}</h3><div class="metric">${r.ndvi}<span style="font-size:1rem">/100</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bar2" style="width:0; background:var(--bronze)"></div></div></div>
+      <div class="card"><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6 1.7A4 4 0 0 0 6 19h11.5Z"/></svg>${I18N[curLang].card_weather}</h3><div class="metric" style="font-size:1.3rem">${rainText}</div>
+        <div class="metric-label">${I18N[curLang].src_forecast}</div></div>
+      <div class="card"><h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21c-4-2-7-6-7-10a7 7 0 0 1 14 0c0 4-3 8-7 10Z"/></svg>${I18N[curLang].card_crop}</h3><div class="metric" style="font-size:1.3rem">${cropText}</div>
+        <div class="metric-label">${I18N[curLang].based_on_trend}</div></div>`;
+    requestAnimationFrame(()=>{ document.getElementById('bar1').style.width=r.soil+'%'; document.getElementById('bar2').style.width=r.ndvi+'%'; });
+
+    const labels=Array.from({length:10},(_,i)=>`D-${90-i*10}`);
+    const trend=labels.map((_,i)=>Math.round(r.ndvi*0.75+i*(r.ndvi*0.025)+Math.sin(i)*2));
+    if(window.Chart){
+      if(ndviChart) ndviChart.destroy();
+      ndviChart=new Chart(document.getElementById('ndviChart'),{type:'line',data:{labels,datasets:[{data:trend,borderColor:'#C9A15A',backgroundColor:'rgba(201,161,90,.15)',fill:true,tension:.35,pointRadius:0,borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#5B6472',font:{size:10}}},y:{grid:{color:'#D5D8CC'},ticks:{color:'#5B6472',font:{size:10}}}}}});
+      if(soilChart) soilChart.destroy();
+      soilChart=new Chart(document.getElementById('soilChart'),{type:'doughnut',data:{labels:I18N[curLang].soil_comp_labels,datasets:[{data:r.comp,backgroundColor:['#8FA98C','#121B30','#C9A15A'],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10.5},color:'#5B6472'}}}}});
+    } else {
+      document.getElementById('ndviChart').parentElement.innerHTML='<p class="subnote">Chart library still loading — refresh if this stays empty.</p>';
+      document.getElementById('soilChart').parentElement.innerHTML='<p class="subnote">Chart library still loading — refresh if this stays empty.</p>';
+    }
+  }
+  document.getElementById('regionSelect').addEventListener('change',renderDash);
+  renderDash();
+
+  function ruleFallback(s){
+    const rules=[
+      {match:s=>s.soil.includes('Black cotton')&&s.season.includes('Kharif'),crop:"Cotton intercropped with pigeon pea",tips:["Deep taproot pigeon pea breaks compacted clay","Adds nitrogen back for next cycle"]},
+      {match:s=>s.rain.includes('Low'),crop:"Pearl millet (bajra) with mulch cover",tips:["Drought-tolerant, low water need","Mulching cuts evaporation loss"]},
+      {match:s=>s.priority.includes('carbon'),crop:"Multi-species cover crop (legume + cereal mix)",tips:["Builds soil organic carbon fastest","Rotate with cash crop next season"]},
+      {match:s=>s.season.includes('Rabi'),crop:"Wheat–mustard intercrop",tips:["Mustard breaks pest cycles for wheat","Efficient winter water use"]},
+    ];
+    return rules.find(r=>r.match(s))||{crop:"Sorghum with green manure rotation",tips:["Resilient across most soil types","Green manure restores soil structure"]};
+  }
+
+  window.recommend=async function(){
+    const soil=document.getElementById('soilType').value;
+    const season=document.getElementById('season').value;
+    const rain=document.getElementById('rainfall').value;
+    const pri=document.getElementById('priority').value;
+    const s={soil,season,rain,priority:pri};
+    const box=document.getElementById('advisorResult');
+    box.innerHTML=`<div class="result"><h4>Consulting AI agronomist…</h4><div class="skeleton" style="width:70%"></div><div class="skeleton" style="width:90%"></div><div class="skeleton" style="width:55%"></div></div>`;
+
+    if(sampleAPI){
+      try{
+        const prompt=`You are an agronomist for a regenerative-agriculture advisory tool. Farmer's field: soil type "${soil}", season "${season}", rainfall "${rain}", stated land-health priority "${pri}". Respond ONLY with JSON, no markdown fences: {"crop":"short crop/rotation recommendation (max 8 words)","reasoning":"1-2 sentence explanation grounded in regenerative-agriculture practice","tips":["short actionable tip","short actionable tip","short actionable tip"]}`;
+        const out=await sampleAPI.json(prompt,{modelTier:'quick'});
+        box.innerHTML=`<div class="result"><h4>${out.crop}</h4>
+          <p style="margin:6px 0 4px">${out.reasoning||''}</p>
+          ${(out.tips||[]).map(t=>`<div class="pill">${t}</div>`).join('')}
+          <p class="subnote">AI-generated recommendation, live for these exact inputs.</p></div>`;
+        return;
+      }catch(e){ /* fall through to rule-based */ }
+    }
+    const hit=ruleFallback(s);
+    box.innerHTML=`<div class="result"><h4>${hit.crop}</h4>
+      ${hit.tips.map(t=>`<div class="pill">${t}</div>`).join('')}
+      <p class="subnote">Matched against soil type, season, rainfall band and your stated land-health priority.</p></div>`;
+  };
+
+  window.scanLeaf=function(evt){
+    const file=evt.target.files[0];
+    if(!file)return;
+    selectedFileName=file.name;
+    const fname=document.getElementById('fileNameLabel'); if(fname) fname.textContent=file.name;
+    const resBox=document.getElementById('scanResult');
+    resBox.innerHTML=`<div class="result"><h4>Analysing leaf image…</h4><div class="skeleton" style="width:60%"></div><div class="skeleton" style="width:85%"></div></div>`;
+    const img=new Image();
+    img.onload=async function(){
+      const c=document.getElementById('leafCanvas');
+      c.width=60;c.height=60;
+      const ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0,60,60);
+      const data=ctx.getImageData(0,0,60,60).data;
+      let brown=0,green=0,total=0;
+      for(let i=0;i<data.length;i+=4){
+        const r=data[i],g=data[i+1],b=data[i+2];
+        total++;
+        if(g>r && g>b) green++;
+        if(r>90 && r<180 && g<r*0.8 && b<r*0.6) brown++;
+      }
+      const brownPct=Math.round((brown/total)*100);
+      const greenPct=Math.round((green/total)*100);
+
+      if(sampleAPI){
+        try{
+          const limits= sampleAPI.limits ? await sampleAPI.limits() : {};
+          if(limits.images){
+            const buf=await file.arrayBuffer();
+            const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+            const prompt=`You are a plant-pathology assistant for a farmer-facing diagnostic tool. Look at the attached leaf photo. Respond ONLY with JSON, no markdown fences: {"diagnosis":"short name of likely issue or 'Healthy'","confidence":number 0-100,"advice":["short actionable step","short actionable step","short actionable step"]}`;
+            const out=await sampleAPI.json([{role:'user',content:prompt}],{images:[{data:b64,mediaType:file.type||'image/jpeg'}]});
+            resBox.innerHTML=`<div class="result"><h4>${out.diagnosis}</h4>
+              <div class="pill">Confidence: ${out.confidence}%</div>
+              ${(out.advice||[]).map(a=>`<div class="pill">${a}</div>`).join('')}
+              <p class="subnote">AI vision analysis of the uploaded photo.</p></div>`;
+            return;
+          }
+        }catch(e){ /* fall through to heuristic */ }
+      }
+      let dx,conf,advice;
+      if(brownPct>18){dx="Possible early blight / leaf spot";conf=Math.min(60+brownPct,92);advice=["Isolate affected plants","Apply copper-based fungicide within 48h","Reduce overhead irrigation"];}
+      else if(greenPct<40){dx="Possible nutrient stress (chlorosis)";conf=55;advice=["Check nitrogen and magnesium levels","Soil test recommended"];}
+      else{dx="Leaf appears healthy";conf=88;advice=["No action needed","Recheck in 7 days"];}
+      resBox.innerHTML=`<div class="result"><h4>${dx}</h4>
+        <div class="pill">Confidence: ${conf}%</div>
+        ${advice.map(a=>`<div class="pill">${a}</div>`).join('')}
+        <p class="subnote">Heuristic demo result from colour distribution (brown ${brownPct}% / green ${greenPct}%). Not a clinical diagnosis.</p></div>`;
+    };
+    img.src=URL.createObjectURL(file);
+  };
+
+  window.printAdvisory=function(){
+    const box=document.getElementById('advisorResult');
+    if(!box.innerHTML.trim()){ box.innerHTML='<div class="result"><h4>Get a recommendation first</h4><p class="subnote">Fill the form and click "Get recommendation", then download the report.</p></div>'; return; }
+    document.getElementById('advisor').classList.add('print-active');
+    window.print();
+    setTimeout(()=>document.getElementById('advisor').classList.remove('print-active'),500);
+  };
+
+  function drawNetwork(){
+    const svg=document.getElementById('networkSvg');
+    const names=I18N[curLang].country_names;
+    const nodes=[{k:"India",x:350,y:150},{k:"Brazil",x:120,y:230},{k:"South Africa",x:250,y:250},{k:"Russia",x:420,y:60},{k:"China",x:560,y:110}];
+    let linkSvg='';
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      linkSvg+=`<line class="link-line" x1="${nodes[i].x}" y1="${nodes[i].y}" x2="${nodes[j].x}" y2="${nodes[j].y}"/>`;
+    }
+    let nodeSvg='';
+    nodes.forEach(nd=>{nodeSvg+=`<circle class="country-node" cx="${nd.x}" cy="${nd.y}" r="9"/><text class="country-label" x="${nd.x+12}" y="${nd.y+4}">${names[nd.k]}</text>`;});
+    svg.innerHTML=linkSvg+nodeSvg;
+  }
+  drawNetwork();
+
+  // ---- Soil Health Calculator (real weighted formula) ----
+  let factorChart;
+  function calcSoil(){
+    const ph=parseFloat(document.getElementById('phSlider').value);
+    const oc=parseFloat(document.getElementById('ocSlider').value);
+    const moist=parseFloat(document.getElementById('moistSlider').value);
+    const nScore=parseFloat(document.getElementById('nSelect').value);
+    document.getElementById('phVal').textContent=ph.toFixed(1);
+    document.getElementById('ocVal').textContent=oc.toFixed(1);
+    document.getElementById('moistVal').textContent=Math.round(moist);
+
+    const phScore=Math.max(0,1-Math.abs(ph-6.5)/3.5);          // optimal pH ~6.5
+    const ocScore=Math.min(oc/3,1);                             // 3%+ organic carbon = ideal
+    const moistScore=Math.max(0,1-Math.abs(moist-50)/50);       // optimal moisture ~50%
+    const composite=Math.round((ocScore*40)+(phScore*30)+(moistScore*20)+(nScore*10));
+
+    document.getElementById('soilCalcScore').textContent=composite;
+    if(window.Chart){
+      const data={labels:I18N[curLang].factor_chart_labels,datasets:[{data:[ocScore*40,phScore*30,moistScore*20,nScore*10],backgroundColor:['#8FA98C','#C9A15A','#5F7A5C','#121B30']}]};
+      if(factorChart){ factorChart.data=data; factorChart.update(); }
+      else{ factorChart=new Chart(document.getElementById('factorChart'),{type:'bar',data,options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{max:40,grid:{display:false},ticks:{display:false}},y:{grid:{display:false},ticks:{color:'#5B6472',font:{size:10.5}}}}}}); }
+    }
+    const factors=[[I18N[curLang].factor_ph,phScore],[I18N[curLang].factor_oc,ocScore],[I18N[curLang].factor_moist,moistScore]];
+    const weakest=factors.sort((a,b)=>a[1]-b[1])[0][0];
+    document.getElementById('soilCalcTip').textContent=`${I18N[curLang].tip_weak1} ${weakest}. ${I18N[curLang].tip_weak2}`;
+  }
+  ['phSlider','ocSlider','moistSlider','nSelect'].forEach(id=>document.getElementById(id).addEventListener('input',calcSoil));
+
+  // ---- Climate Risk What-If (yield impact model) ----
+  function calcClimate(){
+    const rain=parseFloat(document.getElementById('rainSlider').value);
+    const temp=parseFloat(document.getElementById('tempSlider').value);
+    document.getElementById('rainVal').textContent=(rain>0?'+':'')+rain+'%';
+    document.getElementById('tempVal').textContent=temp.toFixed(1)+'°C';
+    // simplified agronomic sensitivity: yield drops with rainfall deviation from 0 and with warming
+    const rainPenalty=-0.55*Math.abs(rain);
+    const heatPenalty=-9*temp;
+    const impact=Math.round(rainPenalty+heatPenalty);
+    const el=document.getElementById('yieldImpact');
+    el.textContent=(impact>0?'+':'')+impact+'%';
+    el.style.color = impact>=-5 ? 'var(--sage-dk)' : (impact>=-20 ? 'var(--bronze)' : '#B5432E');
+    const barPct=Math.max(0,Math.min(100,50+impact));
+    document.getElementById('yieldBar').style.width=barPct+'%';
+    document.getElementById('yieldBar').style.background= impact>=-5?'#5F7A5C':(impact>=-20?'var(--bronze)':'#B5432E');
+    document.getElementById('climateTip').textContent = impact>=-5
+      ? I18N[curLang].climate_ok
+      : impact>=-20
+      ? I18N[curLang].climate_mod
+      : I18N[curLang].climate_severe;
+  }
+  ['rainSlider','tempSlider'].forEach(id=>document.getElementById(id).addEventListener('input',calcClimate));
+
+  nav.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b && b.dataset.panel==='simulator'){ calcSoil(); calcClimate(); } });
+  calcSoil(); calcClimate();
+
+}catch(err){ console.error('AgriN init error',err); }
+</script>
+</body>
+</html>
