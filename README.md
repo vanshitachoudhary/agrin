@@ -125,3 +125,40 @@ python3 -m http.server 8000
 This repo is also live via GitHub Pages: **https://vanshitachoudhary.github.io/agrin/**
 
 ## 📁 Project Structure
+
+```
+agrin/
+├── index.html              # main app — HTML/CSS/JS, the primary live demo
+├── streamlit-app/          # companion Python/Streamlit version — same 4 modules,
+│   ├── app.py              #   rebuilt with Streamlit + Plotly, to demonstrate
+│   ├── requirements.txt    #   the intelligence layer is stack-portable
+│   └── README.md           #   (run/deploy instructions inside)
+├── README.md
+└── LICENSE
+```
+
+We deliberately built AgriN in two stacks — a lightweight client-side app for the primary demo, and a Python/data-science version (`streamlit-app/`) to show the underlying advisory logic is portable across implementations, not tied to one frontend.
+
+## 🗺️ Roadmap
+
+- [x] **Now** — Interactive prototype with AI-driven crop advisory and disease scanning on representative regional data
+- [ ] **Next 3 months** — Integrate real Sentinel-2/MODIS feeds and national soil datasets for one pilot region
+- [ ] **6–12 months** — Federated model-sharing protocol live across 2+ BRICS nations; farmer-facing mobile app
+- [ ] **12+ months** — Open the shared-model API to agri-research institutions across BRICS for joint climate-resilience research
+
+## 🤝 BRICS Cooperation Impact
+
+AgriN directly answers the BRICS AgriN brief by treating **cooperation as the product**, not an afterthought:
+
+- A common data-model protocol lets any member nation plug in without renegotiating infrastructure
+- Cross-border disease and pest signals propagate automatically, giving neighbouring regions early warning
+- Regenerative practices proven in one member nation's soil/climate conditions can inform recommendations in another's, accelerating climate-resilient farming adoption across the bloc
+
+## 👥 Team
+
+**Team Sarcastic**
+Ritika Sharma & Vanshita Choudhary — Acropolis Institute of Technology & Research
+
+## 📄 License
+
+Released under the [MIT License](LICENSE).
