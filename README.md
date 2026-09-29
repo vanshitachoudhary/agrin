@@ -157,7 +157,7 @@ AgriN directly answers the BRICS AgriN brief by treating **cooperation as the pr
 ## 👥 Team
 
 **Team Sarcastic**
-Ritika Sharma & Vanshita Choudhary — Acropolis Institute of Technology & Research
+Vanshita Choudhary & Ritika Sharma — Acropolis Institute of Technology & Research
 
 ## 📄 License
 
